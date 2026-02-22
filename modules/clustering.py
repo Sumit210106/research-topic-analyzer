@@ -78,5 +78,26 @@ def find_optimal_k(X , k_range):
                 best_k = k
             
     return best_k , scores
+
+def get_cluster_themes(model, vectorizer, top_n=5):
+    """
+    Extracts the top n keywords for each centroid to represent its theme.
+    """
+    themes = {}
+    feature_names = vectorizer.get_feature_names_out()
+    centroids = model.cluster_centers_
+    
+    for i, centroid in enumerate(centroids):
+        # Sort indices in descending order of feature importance
+        top_indices = centroid.argsort()[-top_n:][::-1]
+        top_words = [feature_names[idx] for idx in top_indices]
+        themes[i] = top_words
+        
+    return themes
+
+    # def dbscan(X , eps=0.5 , min_samples=5):     
+    #     dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    #     labels = dbscan.fit_predict(X)
+    #     return labels,dbscan
     
     

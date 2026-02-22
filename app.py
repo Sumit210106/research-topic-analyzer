@@ -5,6 +5,8 @@ from modules.vectorization import compute_tfidf
 from modules.preprocessing import preprocess_text
 from modules.clustering import k_means
 from modules.clustering import find_optimal_k
+from modules.clustering import get_cluster_themes
+from modules.summarization import generate_extractive_summary
 
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1: ")
@@ -86,5 +88,20 @@ if uploaded_file is not None:
                 st.subheader("Sample Clustered Papers")
                 st.dataframe(clustered_df[["title", "cluster"]].head())
 
-                
-                     
+                st.subheader("Cluster Themes")
+                vectorizer = st.session_state["vectorizer"]
+                themes = get_cluster_themes(model, vectorizer, top_n=5)
+                for cluster_idx, top_words in themes.items():
+                    st.write(f"**Cluster {cluster_idx} Themes**: {', '.join(top_words)}")
+
+                st.subheader("Extractive Summaries by Cluster")
+                for cluster_idx in range(best_k):
+                    # Combine text of top 15 papers for summary generation
+                    sample_texts = clustered_df[clustered_df["cluster"] == cluster_idx]["combined_text"].head(15).tolist()
+                    cluster_text = " ".join(str(text) for text in sample_texts)
+                    
+                    with st.spinner(f"Generating summary for Cluster {cluster_idx}..."):
+                        summary = generate_extractive_summary(cluster_text, num_sentences=3)
+                        
+                    st.write(f"**Cluster {cluster_idx} Summary**:")
+                    st.info(summary)
