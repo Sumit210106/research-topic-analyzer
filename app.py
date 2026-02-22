@@ -3,9 +3,7 @@ import pandas as pd
 
 from modules.vectorization import compute_tfidf
 from modules.preprocessing import preprocess_text
-
-# imported the clustering module from clustering.py
-from modules.clustering import clustering
+from modules.clustering import k_means
 
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1: ")
@@ -46,6 +44,8 @@ if uploaded_file is not None:
             processed_df = st.session_state["processed_df"]
             X, vectorizer = compute_tfidf(processed_df["processed_text"])
             
+            st.session_state["X"] = X
+            st.session_state["vectorizer"] = vectorizer
             st.success("TF-IDF Computation Completed")
             
             st.subheader("TF-IDF Matrix Shape")
@@ -55,3 +55,27 @@ if uploaded_file is not None:
             
             st.subheader("Top 20 Keywords")
             st.write(feature_names[:20])
+
+        if "X" in st.session_state:
+
+            st.subheader("K-Means Clustering")
+            k = st.slider("Select number of clusters", 2, 10, 3)
+            if st.button("Run K-Means"):
+                X = st.session_state["X"]
+                processed_df = st.session_state["processed_df"]
+
+                labels, model = k_means(X, k)
+
+                processed_df["cluster"] = labels
+
+                st.session_state["clustered_df"] = processed_df
+
+                st.success("K-Means Clustering Completed")
+
+                st.subheader("Cluster Distribution")
+                st.write(processed_df["cluster"].value_counts())
+                st.subheader("Sample Clustered Papers")
+                st.dataframe(processed_df[["title", "cluster"]].head())  
+
+                
+                     
