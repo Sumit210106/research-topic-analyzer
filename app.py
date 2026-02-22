@@ -4,6 +4,7 @@ import pandas as pd
 from modules.vectorization import compute_tfidf
 from modules.preprocessing import preprocess_text
 from modules.clustering import k_means
+from modules.clustering import find_optimal_k
 
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1: ")
@@ -59,12 +60,20 @@ if uploaded_file is not None:
         if "X" in st.session_state:
 
             st.subheader("K-Means Clustering")
-            k = st.slider("Select number of clusters", 2, 10, 3)
             if st.button("Run K-Means"):
                 X = st.session_state["X"]
                 processed_df = st.session_state["processed_df"]
-
-                labels, model = k_means(X, k)
+                
+                best_k, scores = find_optimal_k(X, range(2, 11))
+                
+                if best_k is None:
+                    best_k = 3
+                    
+                st.write(f"Suggested optimal k: {best_k}")
+                    
+                st.line_chart(scores)
+                
+                labels, model = k_means(X, best_k)
 
                 clustered_df = processed_df.copy()
                 clustered_df["cluster"] = labels
@@ -76,7 +85,6 @@ if uploaded_file is not None:
                 st.write(clustered_df["cluster"].value_counts())
                 st.subheader("Sample Clustered Papers")
                 st.dataframe(clustered_df[["title", "cluster"]].head())
-                st.bar_chart(clustered_df["cluster"].value_counts())
 
                 
                      
