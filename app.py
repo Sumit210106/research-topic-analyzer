@@ -4,6 +4,9 @@ import pandas as pd
 from modules.vectorization import compute_tfidf
 from modules.preprocessing import preprocess_text
 
+# imported the clustering module from clustering.py
+from modules.clustering import clustering
+
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1: ")
 
@@ -52,3 +55,25 @@ if uploaded_file is not None:
             
             st.subheader("Top 20 Keywords")
             st.write(feature_names[:20])
+
+            st.markdown("---")
+            st.subheader("Topic Clustering")
+            num_clusters = st.slider("Select number of clusters:", min_value=2, max_value=10, value=5)
+            
+            if st.button("Run Clustering"):
+                kmeans_model, labels = clustering(X, total_clusters=num_clusters)
+                
+                # Add the cluster labels to our dataframe
+                processed_df["Cluster"] = labels
+                st.session_state["clustered_df"] = processed_df
+                
+                st.success(f"Successfully grouped documents into {num_clusters} clusters!")
+                
+                # Show how many documents are in each cluster
+                cluster_counts = processed_df["Cluster"].value_counts().sort_index()
+                st.write("Documents per cluster:")
+                st.bar_chart(cluster_counts)
+                
+                # Show a preview of documents and their assigned clusters
+                st.write("Preview of Clustered Documents:")
+                st.dataframe(processed_df[["title", "Cluster"]].head(10))
