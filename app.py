@@ -66,16 +66,17 @@ if uploaded_file is not None:
 
                 labels, model = k_means(X, k)
 
-                processed_df["cluster"] = labels
-
-                st.session_state["clustered_df"] = processed_df
+                clustered_df = processed_df.copy()
+                clustered_df["cluster"] = labels
+                st.session_state["clustered_df"] = clustered_df
 
                 st.success("K-Means Clustering Completed")
 
                 st.subheader("Cluster Distribution")
-                st.write(processed_df["cluster"].value_counts())
+                st.write(clustered_df["cluster"].value_counts())
                 st.subheader("Sample Clustered Papers")
-                st.dataframe(processed_df[["title", "cluster"]].head())  
+                st.dataframe(clustered_df[["title", "cluster"]].head())
+                st.bar_chart(clustered_df["cluster"].value_counts())
 
                 
                      
