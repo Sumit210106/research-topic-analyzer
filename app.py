@@ -4,6 +4,9 @@ import pandas as pd
 from modules.vectorization import compute_tfidf
 from modules.preprocessing import preprocess_text
 
+# imported the clustering module from clustering.py
+from modules.clustering import clustering
+
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1: ")
 
