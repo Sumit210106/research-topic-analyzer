@@ -89,9 +89,20 @@ if uploaded_file is not None:
                     st.session_state["clustered_df"] = clustered_df
 
                     st.success("K-Means Clustering Completed")
+                    
+                    st.subheader("Evaluation Metrics")
+                    st.metric(label="Silhouette Score", value=f"{scores.get(best_k, 0):.4f}")
+                    st.info("The **Silhouette Score** measures how similar an object is to its own cluster compared to other clusters. A higher score (closer to 1) indicates dense, well-separated clusters.")
 
-                    st.subheader("Cluster Distribution")
-                    st.write(clustered_df["cluster"].value_counts())
+                    st.subheader("Cluster Distribution & Interpretation")
+                    distribution = clustered_df["cluster"].value_counts().reset_index()
+                    distribution.columns = ["Cluster", "Count"]
+                    st.bar_chart(distribution.set_index("Cluster"))
+                    
+                    st.write("**Distribution Interpretation:**")
+                    st.write(f"The largest cluster (Cluster {distribution.iloc[0]['Cluster']}) contains {distribution.iloc[0]['Count']} papers, indicating a dominant research theme in the dataset. "
+                             f"The smallest (Cluster {distribution.iloc[-1]['Cluster']}) has {distribution.iloc[-1]['Count']} papers, suggesting a more niche sub-topic.")
+                    
                     st.subheader("Sample Clustered Papers")
                     st.dataframe(clustered_df[["title", "cluster"]].head())
 
@@ -120,7 +131,15 @@ if uploaded_file is not None:
                     st.success("LDA Topic Modeling Completed")
 
                     st.subheader("Topic Distribution")
-                    st.write(clustered_df["cluster"].value_counts())
+                    distribution = clustered_df["cluster"].value_counts().reset_index()
+                    distribution.columns = ["Topic", "Count"]
+                    st.bar_chart(distribution.set_index("Topic"))
+                    
+                    st.write("**Topic Coherence & Distribution Interpretation:**")
+                    st.write("LDA is a probabilistic model. Each paper is assigned to the topic it has the highest probability of belonging to. "
+                             f"Topic {distribution.iloc[0]['Topic']} is the most prevalent in this dataset.")
+                    st.info("**Topic Coherence Explanation:** A coherent topic will have top keywords that frequently co-occur in the same documents. If the themes look like a random assortment of words, the model may need more topics or better text preprocessing.")
+                    
                     st.subheader("Sample Papers by Topic")
                     st.dataframe(clustered_df[["title", "cluster"]].head())
 
