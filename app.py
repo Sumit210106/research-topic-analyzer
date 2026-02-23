@@ -6,6 +6,7 @@ from modules.vectorization import compute_tfidf
 from modules.preprocessing import preprocess_text
 from modules.clustering import k_means, find_optimal_k
 from modules.dbscan import auto_dbscan
+from modules.topic_modeling import run_lda, get_topics
 
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1")
@@ -26,6 +27,7 @@ if uploaded_file is not None:
     st.write(f"Total Documents: {len(df)}")
 
     df = df.head(1000)
+
 
     if st.button("Run Preprocessing"):
         df["combined_text"] = df["title"] + " " + df["abstract"]
@@ -130,3 +132,32 @@ if "dbscan_df" in st.session_state:
     st.write(dbscan_df["dbscan_cluster"].value_counts())
     st.dataframe(dbscan_df[["title", "dbscan_cluster"]].head())
     st.bar_chart(dbscan_df["dbscan_cluster"].value_counts())
+
+
+if "processed_df" in st.session_state:
+
+    st.subheader("LDA Topic Modeling")
+
+    if st.button("Run LDA"):
+
+        processed_df = st.session_state["processed_df"]
+
+        lda_model, dtm, vectorizer = run_lda(
+            processed_df["processed_text"],
+            n_topics=5
+        )
+
+        topics = get_topics(lda_model, vectorizer)
+
+        st.session_state["lda_topics"] = topics
+
+        st.success("LDA Completed")
+
+
+if "lda_topics" in st.session_state:
+
+    topics = st.session_state["lda_topics"]
+
+    for topic, words in topics.items():
+        st.write(topic)
+        st.write(", ".join(words))
