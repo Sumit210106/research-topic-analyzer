@@ -7,6 +7,7 @@ from modules.preprocessing import preprocess_text
 from modules.clustering import k_means, find_optimal_k
 from modules.dbscan import auto_dbscan
 from modules.topic_modeling import run_lda, get_topics
+from modules.summarization import extractive_summary
 
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1")
@@ -27,7 +28,6 @@ if uploaded_file is not None:
     st.write(f"Total Documents: {len(df)}")
 
     df = df.head(1000)
-
 
     if st.button("Run Preprocessing"):
         df["combined_text"] = df["title"] + " " + df["abstract"]
@@ -93,7 +93,6 @@ if "kmeans_df" in st.session_state:
     st.dataframe(kmeans_df[["title", "kmeans_cluster"]].head())
     st.bar_chart(kmeans_df["kmeans_cluster"].value_counts())
 
-
 if "X" in st.session_state:
 
     st.subheader("DBSCAN (Automatic)")
@@ -123,7 +122,7 @@ if "X" in st.session_state:
 
         st.line_chart(pd.DataFrame(distances, columns=["k-distance"]))
 
-
+# Persist DBSCAN
 if "dbscan_df" in st.session_state:
 
     dbscan_df = st.session_state["dbscan_df"]
@@ -132,7 +131,6 @@ if "dbscan_df" in st.session_state:
     st.write(dbscan_df["dbscan_cluster"].value_counts())
     st.dataframe(dbscan_df[["title", "dbscan_cluster"]].head())
     st.bar_chart(dbscan_df["dbscan_cluster"].value_counts())
-
 
 if "processed_df" in st.session_state:
 
@@ -148,7 +146,6 @@ if "processed_df" in st.session_state:
         )
 
         topics = get_topics(lda_model, vectorizer)
-
         st.session_state["lda_topics"] = topics
 
         st.success("LDA Completed")
@@ -161,3 +158,29 @@ if "lda_topics" in st.session_state:
     for topic, words in topics.items():
         st.write(topic)
         st.write(", ".join(words))
+
+if "processed_df" in st.session_state:
+
+    st.subheader("Extractive Summarization")
+
+    df = st.session_state["processed_df"]
+
+    doc_index = st.number_input(
+        "Select document index",
+        min_value=0,
+        max_value=len(df) - 1,
+        value=0,
+        step=1
+    )
+
+    if st.button("Generate Summary"):
+
+        original_text = df.iloc[doc_index]["combined_text"]
+
+        summary = extractive_summary(original_text, num_sentences=2)
+
+        st.write("### Original Text")
+        st.write(original_text)
+
+        st.write("### Summary")
+        st.write(summary)
