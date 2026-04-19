@@ -1,42 +1,18 @@
+from agents.llm import generate_report_llm
+
+
 def generate_report(query: str, summaries: list, sources: list) -> dict:
     """
-    Generates structured research report.
+    Generates a structured research report using Groq LLM synthesis.
+    Falls back to a static template if the LLM is unavailable.
 
     Output format:
     {
         "title": str,
         "abstract": str,
-        "key_findings": list,
-        "sources": list,
+        "key_findings": list[str],
+        "sources": list[str],
         "conclusion": str
     }
     """
-
-    if not summaries:
-        return {
-            "title": query,
-            "abstract": "No sufficient information found for this query.",
-            "key_findings": [],
-            "sources": sources,
-            "conclusion": "Please try a more specific or different query."
-        }
-
-
-    abstract = summaries[0]
-
-    key_findings = summaries[:5]
-
-    conclusion = (
-        "Based on multiple sources, this topic shows significant advancements "
-        "and growing adoption across various domains."
-    )
-
-    return {
-        "title": query,
-        "abstract": abstract,
-        "key_findings": key_findings,
-        "sources": sources,
-        "conclusion": conclusion
-    }
-
-    
+    return generate_report_llm(query, summaries, sources)
