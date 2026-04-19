@@ -72,11 +72,11 @@ with st.sidebar:
     
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Milestone 1", key="btn_m1", use_container_width=True):
-            os.execv(sys.executable, ['python', '-m', 'streamlit', 'run', 'app.py'])
+        st.button("Milestone 1", key="btn_m1", use_container_width=True, disabled=True)
     with col2:
-        if st.button("Milestone 2", key="btn_m2", use_container_width=True, type="primary"):
-            pass
+        st.button("Milestone 2", key="btn_m2", use_container_width=True, type="primary")
+        
+    st.caption("Note: Streamlit Cloud isolates apps per container. To run Milestone 1, please change the 'Main File Path' to `app.py` in your Cloud Dashboard settings.")
 
 # ── Main content ───────────────────────────────────────────────────────────────
 if run_research and not query.strip():
