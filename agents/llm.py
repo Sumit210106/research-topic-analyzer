@@ -1,10 +1,3 @@
-"""
-LLM integration via Groq API.
-- summarize()          : summarizes a single text chunk
-- summarize_all()      : batch summarization
-- generate_report_llm(): produces a structured JSON research report
-"""
-
 import os
 import json
 from dotenv import load_dotenv
@@ -76,7 +69,7 @@ Return your response as a valid JSON object with exactly this structure:
 {{
   "title": "<str>",
   "abstract": "<str>",
-  "key_findings": ["<str>", "<str>", ...],
+  "key_findings": ["<str>", "<str>"],
   "conclusion": "<str>"
 }}
 Return ONLY the raw JSON. No backticks, no explanations. Do not acknowledge."""

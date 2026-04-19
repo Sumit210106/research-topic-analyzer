@@ -46,9 +46,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🤖 Intelligent AI Research Assistant")
-st.markdown("### Milestone 2: Agentic Workflow & Report Generation")
-st.write("Leveraging LangGraph and BART-Large-CNN to perform autonomous research.")
+from agents.graph import build_graph
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
@@ -60,56 +58,106 @@ with st.sidebar:
     
     run_research = st.button("Run Research Agent", use_container_width=True, type="primary")
     
-    st.markdown("""
-    **Agentic Workflow:**
-    1. 🔍 **Web Search**: Crawls top research findings.
-    2. 🧹 **Clean & Extract**: Processes raw HTML/Text data.
-    3. 📝 **AI Summarization**: Generates concise insights using LLMs.
-    4. 📊 **Report Synthesis**: Compiles a structured research report.
-    """)
-    
-    run_research = st.button("🚀 Execute Agent")
-    
-    st.divider()
-    st.info("Milestone 2 uses an automated graph-based approach, connecting multiple specialized agents.")
+    st.markdown("---")
+    st.subheader("Agent Pipeline")
+    st.write("1. Web Search")
+    st.write("2. Content Cleaning")
+    st.write("3. LLM Summarization")
+    st.write("4. Quality Validation")
+    st.write("5. Report Synthesis")
 
-if run_research and query:
-    with st.spinner("Agentic Workflow in progress... Initializing LangGraph..."):
-        try:
-            # Initialize graph
-            graph = build_graph()
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.write("### Navigation")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Milestone 1", key="btn_m1", use_container_width=True):
+            os.execv(sys.executable, ['python', '-m', 'streamlit', 'run', 'app.py'])
+    with col2:
+        if st.button("Milestone 2", key="btn_m2", use_container_width=True, type="primary"):
+            pass
+
+# ── Main content ───────────────────────────────────────────────────────────────
+if run_research and not query.strip():
+    st.warning("Please enter a research topic to proceed.")
+
+elif run_research and query.strip():
+    st.subheader(f'Researching: "{query}"')
+    
+    status_text = st.empty()
+    progress_bar = st.progress(0)
+    
+    try:
+        status_text.info("Initializing agent and performing web search...")
+        
+        graph = build_graph()
+        initial_state = {
+            "query": query,
+            "results": [],
+            "summaries": [],
+            "validated": False,
+            "report": {},
+            "error": None,
+        }
+
+        final_state = graph.invoke(initial_state)
+
+        error_msg = final_state.get("error")
+        validated = final_state.get("validated", False)
+        report = final_state.get("report", {})
+        summaries = final_state.get("summaries", [])
+        results = final_state.get("results", [])
+
+        progress_bar.progress(100)
+        
+        if not validated or error_msg:
+            status_text.error(f"Validation Issue: {error_msg or 'Retrieved results were deemed insufficient.'}")
+        else:
+            status_text.success("Research synthesis completed successfully.")
+
+        st.divider()
+
+        def build_markdown(report_data, results_list):
+            lines = [
+                f"# {report_data.get('title', query)}", "",
+                "## Abstract", report_data.get("abstract", ""), "",
+                "## Key Findings"
+            ]
+            for i, f in enumerate(report_data.get("key_findings", []), 1):
+                lines.append(f"{i}. {f}")
+            lines.extend(["", "## Conclusion", report_data.get("conclusion", ""), "", "## Sources"])
+            for i, r in enumerate(results_list, 1):
+                lines.append(f"{i}. [{r.get('title', 'Source')}]({r.get('link', '#')})")
+            return "\n".join(lines)
+
+        md_content = build_markdown(report, results)
+        st.download_button(
+            label="Export Report as Markdown",
+            data=md_content,
+            file_name=f"research_report.md",
+            mime="text/markdown",
+        )
+
+        st.write("")
+
+        tab1, tab2 = st.tabs(["Structured Report", f"Sources ({len(results)})"])
+
+        with tab1:
+            st.markdown(f"""
+            <div class="report-card">
+                <div class="report-title">{report.get('title', query)}</div>
+                <b>Abstract:</b><br/>{report.get('abstract', 'No abstract available.')}
+            </div>
+            """, unsafe_allow_html=True)
             
-            # Initial state
-            initial_state = {"query": query}
-            
-            # Run graph
-            final_state = graph.invoke(initial_state)
-            
-            st.success(f"Successfully synthesized research for: **{query}**")
-            
-            # Create tabs for Report and Sources
-            tab1, tab2 = st.tabs(["📑 Research Report", "🔗 Sources & Summaries"])
-            
-            with tab1:
-                report = final_state.get("report", {})
-                
-                st.markdown(f"""
-                <div class="report-card">
-                    <h2>{report.get('title', 'Research Report')}</h2>
-                    <hr style="border: 0.5px solid #3d4156;">
-                    <h3>Abstract</h3>
-                    <p style="font-style: italic; color: #b0b3b8;">{report.get('abstract', 'No abstract available.')}</p>
-                    <br>
-                    <h3>Key Insights</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                for finding in report.get("key_findings", []):
-                    st.markdown(f"""
-                    <div class="finding-item">
-                        {finding}
-                    </div>
-                    """, unsafe_allow_html=True)
+            st.write("#### Key Findings")
+            findings = report.get("key_findings", [])
+            if findings:
+                for item in findings:
+                    st.markdown(f'<div class="finding-item">{item}</div>', unsafe_allow_html=True)
+            else:
+                st.info("No key findings detected.")
                 
             st.divider()
             st.write("#### Conclusion")
