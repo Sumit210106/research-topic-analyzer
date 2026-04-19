@@ -1,32 +1,28 @@
-from duckduckgo_search import DDGS
+"""
+Web search using the `ddgs` package (formerly duckduckgo_search).
+Returns top results for a given research query.
+"""
+
+from ddgs import DDGS
 
 
-def search_web(query: str) -> list:
+def search_web(query: str, max_results: int = 6) -> list:
     """
-    Takes a query string and returns top 5 search results.
+    Searches the web using DuckDuckGo and returns top results.
 
     Output format:
-    [
-        {
-            "title": "...",
-            "body": "...",
-            "link": "..."
-        }
-    ]
+    [{"title": "...", "body": "...", "link": "..."}]
     """
-
     results = []
-
     try:
-        with DDGS() as ddgs:
-            for r in ddgs.text(query, max_results=5):
-                results.append({
-                    "title": r.get("title", ""),
-                    "body": r.get("body", ""),
-                    "link": r.get("href", "")
-                })
-
+        raw = DDGS().text(query, max_results=max_results)
+        for r in raw:
+            results.append({
+                "title": r.get("title", ""),
+                "body": r.get("body", ""),
+                "link": r.get("href", ""),
+            })
     except Exception as e:
-        print("❌ Search Error:", e)
+        print(f"❌ Search Error: {e}")
 
     return results

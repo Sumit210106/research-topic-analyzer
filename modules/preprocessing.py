@@ -1,38 +1,40 @@
-import spacy 
 import string 
 import nltk
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 
+# Ensure necessary NLTK datasets are downloaded
+for dataset in ['punkt', 'punkt_tab', 'stopwords', 'wordnet']:
+    try:
+        nltk.data.find(f'tokenizers/{dataset}' if 'punkt' in dataset else f'corpora/{dataset}')
+    except LookupError:
+        nltk.download(dataset, quiet=True)
 
-nlp = spacy.load('en_core_web_sm')
-try:
-    stop_words = set(stopwords.words('english'))
-except LookupError:
-    nltk.download('stopwords')
-    stop_words = set(stopwords.words('english'))
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
 
 def preprocess_text(text):
     """
-    Text Preprocessing Pipeline:
+    Text Preprocessing Pipeline using pure NLTK:
     1. Lowercasing
-    2. Tokenization (spaCy)
-    3. Stopword removal (spaCy built-in)
+    2. Tokenization 
+    3. Stopword removal 
     4. Punctuation removal
-    5. Lemmatization (POS-aware)
+    5. Lemmatization 
     6. Remove non-alphabetic tokens
     """    
-    text = text.lower()
+    text = str(text).lower()
     
-    doc = nlp(text)
+    # Tokenize
+    tokens = word_tokenize(text)
     
     cleaned_tokens = [
-        token.lemma_
-        for token in doc
-        if not token.is_stop
-        and not token.is_punct
-        and token.is_alpha
+        lemmatizer.lemmatize(token)
+        for token in tokens
+        if token not in stop_words
+        and token not in string.punctuation
+        and token.isalpha()
     ]
     
     return ' '.join(cleaned_tokens)
-
-    

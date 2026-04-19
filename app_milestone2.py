@@ -1,78 +1,64 @@
 import streamlit as st
-import pandas as pd
-from agents.graph import build_graph
+import os
+import sys
 
-# Page config for a premium feel
+# ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="AI Research Agent | Milestone 2",
-    page_icon="🤖",
+    page_title="Intelligent Research Analyzer",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for premium look
 st.markdown("""
-    <style>
-    .main {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    .stButton>button {
-        width: 100%;
-        border-radius: 8px;
-        height: 3.5em;
-        background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
-        color: white;
-        font-weight: bold;
-        border: none;
-        transition: 0.3s;
-        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-    }
-    .stButton>button:hover {
-        background: linear-gradient(90deg, #45a049 0%, #388E3C 100%);
-        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-        transform: translateY(-2px);
-    }
+<style>
     .report-card {
-        padding: 30px;
-        border-radius: 15px;
-        background-color: #1e2130;
-        border-left: 8px solid #4CAF50;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        background-color: #f8f9fa;
+        color: #1e1e1e;
+        padding: 24px;
+        border-radius: 8px;
+        border-left: 4px solid #0056b3;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    .source-card {
-        padding: 15px;
-        border-radius: 10px;
-        background-color: #25293d;
-        margin-bottom: 10px;
-        border: 1px solid #3d4156;
-    }
-    .source-link {
-        color: #4CAF50;
-        text-decoration: none;
-        font-weight: bold;
-    }
-    .source-link:hover {
-        text-decoration: underline;
+    .report-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #111;
     }
     .finding-item {
-        margin-bottom: 10px;
-        padding-left: 10px;
-        border-left: 3px solid #4CAF50;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 16px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        color: #333;
     }
-    </style>
-    """, unsafe_allow_html=True)
+    div[data-testid="stSidebarNav"] {
+        display: none;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .report-card { background-color: #1e1e1e; color: #f0f0f0; border-left: 4px solid #4da3ff; }
+        .report-title { color: #f0f0f0; }
+        .finding-item { background-color: #2b2b2b; border: 1px solid #444; color: #eee; }
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🤖 Intelligent AI Research Assistant")
 st.markdown("### Milestone 2: Agentic Workflow & Report Generation")
-st.write("Leveraging LangGraph and Groq (Llama 3.1) to perform autonomous research.")
+st.write("Leveraging LangGraph and BART-Large-CNN to perform autonomous research.")
 
+# ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.header("Search Parameters")
-    query = st.text_input("Enter Research Topic", placeholder="e.g., Generative AI in Drug Discovery")
+    st.title("Research Agent")
+    st.write("**Milestone 2: Agentic AI**")
     
-    st.divider()
+    st.markdown("---")
+    query = st.text_input("Enter a research topic:", placeholder="e.g., AI in drug discovery")
+    
+    run_research = st.button("Run Research Agent", use_container_width=True, type="primary")
     
     st.markdown("""
     **Agentic Workflow:**
@@ -98,12 +84,6 @@ if run_research and query:
             
             # Run graph
             final_state = graph.invoke(initial_state)
-            
-            # Check for errors in state
-            if final_state.get("error"):
-                st.error(f"Agent Error: {final_state['error']}")
-                if not final_state.get("report"):
-                    st.stop()
             
             st.success(f"Successfully synthesized research for: **{query}**")
             
@@ -131,43 +111,38 @@ if run_research and query:
                     </div>
                     """, unsafe_allow_html=True)
                 
-                st.markdown("---")
-                st.subheader("Final Conclusion")
-                st.info(report.get("conclusion", "Analysis complete."))
-            
-            with tab2:
-                summaries = final_state.get("summaries", [])
-                results = final_state.get("results", [])
-                
-                if not results:
-                    st.warning("No external sources were found for this query.")
-                else:
-                    for i, (res, summ) in enumerate(zip(results, summaries)):
-                        with st.container():
-                            st.markdown(f"""
-                            <div class="source-card">
-                                <strong>Source {i+1}: {res.get('title', 'Untitled')}</strong><br>
-                                <p style="font-size: 0.9em; color: #b0b3b8;">{summ}</p>
-                                <a href="{res.get('link', '#')}" target="_blank" class="source-link">View Original Source ↗</a>
-                            </div>
-                            """, unsafe_allow_html=True)
+            st.divider()
+            st.write("#### Conclusion")
+            st.info(report.get("conclusion", "Analysis complete."))
 
-        except Exception as e:
-            st.error(f"Execution Error: {str(e)}")
-            with st.expander("Technical Details"):
-                st.exception(e)
+        with tab2:
+            if not results:
+                st.warning("No linked sources available.")
+            else:
+                for i, r in enumerate(results, 1):
+                    with st.expander(f"Source {i}: {r.get('title', 'Untitled')}", expanded=True):
+                        if i-1 < len(summaries):
+                            st.write(f"**Summary:** {summaries[i-1]}")
+                        st.write(f"[Read Original Article]({r.get('link', '#')})")
 
-elif run_research and not query:
-    st.warning("⚠️ Please provide a research topic before starting the agent.")
+    except Exception as e:
+        progress_bar.progress(0)
+        status_text.error(f"An error occurred during execution: {str(e)}")
 
 else:
-    # Beautiful landing visual
-    st.markdown("""
-    <div style="text-align: center; padding: 50px;">
-        <h2 style="color: #4CAF50;">Welcome to Milestone 2</h2>
-        <p>Start your research by entering a topic in the sidebar.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.header("Intelligent AI Research Assistant")
+    st.write(
+        "Welcome to the **Milestone 2 Agentic Analysis System**. "
+        "This tool automates the process of researching any given topic by deploying "
+        "an autonomous agent that searches the web, summarizes literature, "
+        "verifies data quality, and organizes the findings into a clear, structured format."
+    )
     
-    # Placeholder for a professional look
-    st.image("https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", use_column_width=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.info("**Capabilities**\n- Autonomous Web Extraction\n- Groq LLaMA 3 Summarization\n- Automated Validation\n- Actionable Insight extraction")
+    with col2:
+        st.success("**Architecture**\n- Orchestrated via **LangGraph**\n- Stateless Python Agents\n- Highly Responsive UI \n- Exportable Markdown Reports")
+    
+    st.divider()
+    st.write("**Enter a query in the sidebar to begin analyzing.**")

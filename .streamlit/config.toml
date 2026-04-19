@@ -1,0 +1,6 @@
+[server]
+# Exclude venv from file watcher to suppress torchvision import noise
+folderWatchBlacklist = ["venv", ".git", "__pycache__"]
+
+[browser]
+gatherUsageStats = false

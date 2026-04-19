@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import os
+import sys
 from sklearn.decomposition import TruncatedSVD
 
 from modules.vectorization import compute_tfidf
@@ -9,9 +11,21 @@ from modules.dbscan import auto_dbscan
 from modules.topic_modeling import run_lda, get_topics
 from modules.summarization import extractive_summary
 
+st.set_page_config(page_title="Intelligent Research Topic Analyzer", layout="wide")
+
+# ── Sidebar Navigation ──────────────────────────
+with st.sidebar:
+    st.title("Navigation")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Milestone 1", key="btn_m1", use_container_width=True, type="primary"):
+            pass # Already here
+    with col2:
+        if st.button("Milestone 2", key="btn_m2", use_container_width=True):
+            os.execv(sys.executable, ['python', '-m', 'streamlit', 'run', 'app_milestone2.py'])
+
 st.title("Intelligent Research Topic Analyzer")
 st.write("Milestone 1")
-
 
 topic = st.text_input("Enter a research topic")
 if topic:
