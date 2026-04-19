@@ -66,7 +66,7 @@ st.markdown("""
 
 st.title("🤖 Intelligent AI Research Assistant")
 st.markdown("### Milestone 2: Agentic Workflow & Report Generation")
-st.write("Leveraging LangGraph and BART-Large-CNN to perform autonomous research.")
+st.write("Leveraging LangGraph and Groq (Llama 3.1) to perform autonomous research.")
 
 with st.sidebar:
     st.header("Search Parameters")
@@ -98,6 +98,12 @@ if run_research and query:
             
             # Run graph
             final_state = graph.invoke(initial_state)
+            
+            # Check for errors in state
+            if final_state.get("error"):
+                st.error(f"Agent Error: {final_state['error']}")
+                if not final_state.get("report"):
+                    st.stop()
             
             st.success(f"Successfully synthesized research for: **{query}**")
             

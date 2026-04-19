@@ -3,8 +3,7 @@ from langgraph.graph import StateGraph
 
 from agents.search import search_web
 from agents.retriever import clean_results
-from agents.llm import summarize_all
-from agents.report import generate_report
+from agents.llm import summarize_all, generate_report_llm
 
 
 class State(TypedDict):
@@ -63,7 +62,7 @@ def report_node(state: State) -> dict:
         summaries = state.get("summaries", [])
         sources = [r.get("link", "") for r in results if r.get("link")]
 
-        report = generate_report(query, summaries, sources)
+        report = generate_report_llm(query, summaries, sources)
         return {"report": report, "error": None}
     except Exception as e:
         return {
