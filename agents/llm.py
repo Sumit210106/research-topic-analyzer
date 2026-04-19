@@ -1,6 +1,5 @@
 from transformers import pipeline
 
-# load model once (global)
 summarizer = pipeline(
     "summarization",
     model="facebook/bart-large-cnn"
@@ -13,7 +12,7 @@ def summarize(text: str) -> str:
     """
 
     try:
-        # limit input (important for model)
+
         text = text[:1000]
 
         summary = summarizer(
@@ -28,7 +27,7 @@ def summarize(text: str) -> str:
     except Exception as e:
         print("❌ LLM Error:", e)
 
-        # fallback (important)
+
         return text[:200]
 
 

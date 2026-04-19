@@ -1,10 +1,32 @@
 def clean_results(results: list) -> list:
     """
-    Takes search results and extracts only the bodies for summarization.
+    Takes raw search results and returns cleaned text list.
+
+    Input:
+    [
+        {"title": "...", "body": "...", "link": "..."}
+    ]
+
+    Output:
+    [
+        "clean text 1",
+        "clean text 2"
+    ]
     """
-    cleaned = []
+
+    cleaned_texts = []
+
     for r in results:
-        body = r.get("body", "").strip()
-        if body:
-            cleaned.append(body)
-    return cleaned
+        body = r.get("body", "")
+
+        if not body:
+            continue
+
+        text = body.strip()
+
+        if len(text) < 100:
+            continue
+
+        cleaned_texts.append(text)
+
+    return cleaned_texts

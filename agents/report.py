@@ -12,7 +12,6 @@ def generate_report(query: str, summaries: list, sources: list) -> dict:
     }
     """
 
-    # fallback
     if not summaries:
         return {
             "title": query,
@@ -22,13 +21,11 @@ def generate_report(query: str, summaries: list, sources: list) -> dict:
             "conclusion": "Please try a more specific or different query."
         }
 
-    # Abstract (short intro)
+
     abstract = summaries[0]
 
-    # Key findings (limit to 4–5)
     key_findings = summaries[:5]
 
-    # Simple reasoning for conclusion
     conclusion = (
         "Based on multiple sources, this topic shows significant advancements "
         "and growing adoption across various domains."

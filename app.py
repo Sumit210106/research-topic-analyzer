@@ -122,7 +122,6 @@ if "X" in st.session_state:
 
         st.line_chart(pd.DataFrame(distances, columns=["k-distance"]))
 
-# Persist DBSCAN
 if "dbscan_df" in st.session_state:
 
     dbscan_df = st.session_state["dbscan_df"]
