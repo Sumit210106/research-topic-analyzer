@@ -3,7 +3,7 @@ Web search using the `ddgs` package (formerly duckduckgo_search).
 Returns top results for a given research query.
 """
 
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 
 def search_web(query: str, max_results: int = 6) -> list:
