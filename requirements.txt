@@ -79,3 +79,6 @@ weasel==0.4.3
 wrapt==2.1.1
 groq==0.18.0
 python-dotenv==1.0.1
+langgraph==0.3.5
+duckduckgo-search==6.4.1
+langchain-core==0.3.36
